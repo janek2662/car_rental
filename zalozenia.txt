@@ -1,0 +1,16 @@
+Login:
+    POST /login{"login": login, "pass": pass}
+
+Register:
+    POST /register{"login": login, "pass": pass}
+
+Car:
+    GET /car/<car_id>                                                                             (user, admin)
+    PUT\POST /car{"brand": brand, "version": version, "year": year}                               (admin)
+    DELETE /car/<car_id>                                                                          (admin)
+
+Reservation:
+    GET /reservation/<res_id>                                                                     (user, admin)
+    POST /reservation/<res_id>{"car_id": car_id, "from": 18-03-2022, "to" 20-03-2022}             (user)
+    DELETE /reservation/<res_id>                                                                  (user, admin)
+    UPDATE\PATCH /reservation/<res_id>{"from": 18-03-2022, "to" 20-03-2022}                       (user)
