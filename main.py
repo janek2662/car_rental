@@ -21,13 +21,14 @@ db = SQLAlchemy(app)
 #------------------------------------------------------------- MODELS ---------------------------------------------------------------------------#
 
 class CarModel(db.Model):
-    __tablename__ = 'Cars'
+    __tablename__ = 'cars_table'
     id = db.Column(db.Integer, primary_key=True)
     brand = db.Column(db.String(100), nullable=False)
     version = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, brand, version, year):
+    def __init__(self, id, brand, version, year):
+        self.id = id
         self.brand = brand
         self.version = version
         self.year = year
@@ -35,28 +36,37 @@ class CarModel(db.Model):
     def __repr__(self):
         return '<id {}>'.format(self.id)
 
-# class UserModel(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     login = db.Column(db.String(100), nullable=False)
-#     password = db.Column(db.String(100), nullable=False)
-#     is_admin = db.Column(db.Boolean, nullable=False)
+class UserModel(db.Model):
+    __tablename__ = 'users_table'
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False)
 
-#     def __init__(self, brand, version, year):
-#         self.brand = brand
-#         self.version = version
-#         self.year = year
+    def __init__(self, id, login, password, is_admin):
+        self.id = id
+        self.login = login
+        self.password = password
+        self.is_admin = is_admin
 
-#     def __repr__(self):
-#         return f"User(login = {login}, pass = {password}, is_admin = {is_admin})"
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
 
-# class ReservationModel(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     car_id = db.Column(db.Integer, nullable=False)
-#     date_from = db.Column(db.DateTime, nullable=False)
-#     date_to = db.Column(db.DateTime, nullable=False)
+class ReservationModel(db.Model):
+    __tablename__ = 'reservations_table'
+    id = db.Column(db.Integer, primary_key=True)
+    car_id = db.Column(db.Integer, nullable=False)
+    date_from = db.Column(db.DateTime, nullable=False)
+    date_to = db.Column(db.DateTime, nullable=False)
+    
+    def __init__(self, id, car_id, date_from, date_to):
+        self.id = id
+        self.car_id = car_id
+        self.date_from = date_from
+        self.date_to = date_to
 
-#     def __repr__(self):
-#         return f"User(car = {car_id}, date_from = {date_from}, date_to = {date_from})"
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
 
 db.create_all()
 
@@ -115,7 +125,6 @@ class Car(Resource):
     @marshal_with(car_resource_fields)
     def get(self, car_id):
         result = CarModel.query.filter_by(id=car_id).first()
-
         if not result:
             abort(404, message='Could not find car with that id...')
         return result
