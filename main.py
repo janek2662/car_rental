@@ -30,15 +30,13 @@ class CarModel(db.Model):
     version = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, id, brand, version, year):
-        self.id = id
+    def __init__(self, brand, version, year):
         self.brand = brand
         self.version = version
         self.year = year
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
-
     
 
 class UserModel(db.Model):
@@ -78,10 +76,10 @@ db.create_all()
 
 
 # CAR
-car_put_args = reqparse.RequestParser()
-car_put_args.add_argument("brand", type=str, help="Brand of the car", required=True)
-car_put_args.add_argument("version", type=int, help="Version of the car", required=True)
-car_put_args.add_argument("year", type=int, help="Production year of the car", required=True)
+car_post_args = reqparse.RequestParser()
+car_post_args.add_argument("brand", type=str, help="Brand of the car", required=True)
+car_post_args.add_argument("version", type=int, help="Version of the car", required=True)
+car_post_args.add_argument("year", type=int, help="Production year of the car", required=True)
 
 # LOGIN/REGISTER
 user_post_args = reqparse.RequestParser()
@@ -128,33 +126,34 @@ class Car(Resource):
 
     @marshal_with(car_resource_fields)
     def get(self, car_id):
-
-        if session["is_admin"]:
-            result = CarModel.query.filter_by(id=car_id).first()
-            if not result:
-                abort(404, message='Could not find car with that id...')
-        else:
-            abort(404, message='You need admin privilages...')
+        result = CarModel.query.filter_by(id=car_id).first()
+        if not result:
+            abort(404, message='Could not find car with that id...')
 
         return result
     
     @marshal_with(car_resource_fields)
-    def put(self, car_id):
-        args = car_put_args.parse_args()
-        result = CarModel.query.filter_by(id=car_id).first()
-        if result:
-            abort(409, message='Car id taken...')
-        car = CarModel(id=car_id, brand=args['brand'], version=args['version'], year=args['year'])
-        db.session.add(car)
-        db.session.commit()
+    def post(self):
+        if session["is_admin"]:
+            args = car_post_args.parse_args()
+            car = CarModel(brand=args['brand'], version=args['version'], year=args['year'])
+            db.session.add(car)
+            db.session.commit()
+        else:
+            abort(404, message='You need admin privilages...')
+
         return car, 201
     
     def delete(self, car_id):
-        car = CarModel.query.filter_by(id=car_id).first()
-        if not car:
-            abort(404, message='Could not find car with that id...')
-        db.session.delete(car)
-        db.session.commit()
+        if session["is_admin"]:
+            car = CarModel.query.filter_by(id=car_id).first()
+            if not car:
+                abort(404, message='Could not find car with that id...')
+            db.session.delete(car)
+            db.session.commit()
+        else:
+            abort(404, message='You need admin privilages...')
+        
         return '', 204
 
 class Reservation(Resource):
