@@ -282,7 +282,6 @@ api.add_resource(Reservation, "/reservation/<int:res_id>")
 api.add_resource(Car, "/car/<int:car_id>")
 
 
-
 #-------------------------------------------------------- MAIN ------------------------------------------------------------------------#
 if __name__ == "__main__":
     app.run(debug=True)
