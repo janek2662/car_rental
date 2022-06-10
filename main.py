@@ -4,6 +4,8 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with, 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property
 import psycopg2
+from dateutil.relativedelta import relativedelta
+import datetime
 
 app = Flask(__name__)
 api = Api(app)
@@ -24,11 +26,12 @@ db = SQLAlchemy(app)
 #------------------------------------------------------------- MODELS ---------------------------------------------------------------------------#
 
 class CarModel(db.Model):
-    __tablename__ = 'cars_table'
+    __tablename__ = 'Cars_table1'
     id = db.Column(db.Integer, primary_key=True)
     brand = db.Column(db.String(100), nullable=False)
     version = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
+    reservation = db.relationship("Reservations_table1")
 
     def __init__(self, brand, version, year):
         self.brand = brand
@@ -40,11 +43,12 @@ class CarModel(db.Model):
     
 
 class UserModel(db.Model):
-    __tablename__ = 'users_table'
+    __tablename__ = 'Users_table1'
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False)
+    reservation = db.relationship("Reservations_table1")
 
     def __init__(self, login, password, is_admin):
         self.login = login
@@ -55,17 +59,18 @@ class UserModel(db.Model):
         return '<id {}>'.format(self.id)
 
 class ReservationModel(db.Model):
-    __tablename__ = 'reservations_table'
+    __tablename__ = 'Reservations_table1'
     id = db.Column(db.Integer, primary_key=True)
-    car_id = db.Column(db.Integer, nullable=False)
     date_from = db.Column(db.DateTime, nullable=False)
     date_to = db.Column(db.DateTime, nullable=False)
-    
-    def __init__(self, id, car_id, date_from, date_to):
-        self.id = id
-        self.car_id = car_id
+    car_id = db.Column(db.Integer, db.ForeignKey("Cars_table1.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users_table1.id"), nullable=False)
+
+    def __init__(self, car_id, date_from, date_to, user_id):
         self.date_from = date_from
         self.date_to = date_to
+        self.car_id = car_id
+        self.user_id = user_id
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -160,35 +165,75 @@ class Reservation(Resource):
 
     @marshal_with(reservation_resource_fields)
     def get(self, reservation_id):
-        result = ReservationModel.query.filter_by(id=reservation_id).first()
-        if not result:
-            abort(404, message='Could not find reservation with that id...')
+        if session["is_admin"]:
+            result = ReservationModel.query.filter_by(id=reservation_id).first()
+            if not result:
+                abort(404, message='Could not find reservation with that id...')
+        else:
+            result = ReservationModel.query.filter_by(id=reservation_id).first()
+            if not result.user_id == session["user_id"]:
+                abort(404, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
+                
         return result
     
+    # CHECK WHETHER CAR IS AVAILABLE AT THAT DATE
     @marshal_with(reservation_resource_fields)
-    def post(self, reservation_id):
-        args = reservation_post_args.parse_args()
-        result = ReservationModel.query.filter_by(id=reservation_id).first()
-        if result:
-            abort(409, message='Reservation id taken...')
-        reservation = ReservationModel(id=reservation_id, car_id=args['car_id'], date_from=args['date_from'], date_to=args['date_to'])
-        db.session.add(reservation)
-        db.session.commit()
+    def post(self):
+        if not session["is_admin"] and session["user_id"]:
+            args = reservation_post_args.parse_args()
+
+            date_from = datetime.datetime.strptime(args['date_from'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            date_to = datetime.datetime.strptime(args['date_to'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
+            for result in results:
+                if date_to > result.date_from or date_from < result.date_to:
+                    abort(404, message='Car is booked in that time...')
+
+            if date_from > date_to:
+                reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
+                db.session.add(reservation)
+                db.session.commit()                
+            else:
+                abort(404, message='Dates are not right...')
+        else:
+            abort(404, message='Admin cannot make reservations...')
+
         return reservation, 201
 
-    @marshal_with(car_resource_fields)
-    def patch(self, car_id):
-        args = car_update_args.parse_args()
-        result = CarModel.query.filter_by(id=car_id).first()
-        if not result:
-            abort(404, message='Reservation doesnt exist')
+    # reservation from cannot be after resertation to
+    # CHECK WHETHER CAR IS AVAILABLE AT THAT DATE
+    @marshal_with(reservation_resource_fields)
+    def patch(self, reservation_id):
+        if not session["is_admin"] and session["user_id"]:
+            args = reservation_update_args.parse_args()
+            result = ReservationModel.query.filter_by(id=reservation_id).first()
 
-        if args['brand']:
-            result.brand = args['brand']
-        if args['version']:
-            result.version = args['version']
-        if args['year']:
-            result.year = args['year']
+            if result.date_from != args['date_from'] or result.date_to != args['date_to'] or result.car_id != args['car_id']:
+                abort(404, message='No changes being made...')
+
+            date_from = datetime.datetime.strptime(args['date_from'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            date_to = datetime.datetime.strptime(args['date_to'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
+            for result in results:
+                if result.reservation_id == reservation_id:
+                    continue
+                if (date_to > result.date_from or date_from < result.date_to):
+                    abort(404, message='Car is booked in that time...')
+
+            if date_from > date_to:
+                
+                if args['date_from']:
+                    result.date_from = args['date_from']
+                if args['date_to']:
+                    result.date_to = args['date_to']
+                if args['car_id']:
+                    result.car_id = args['car_id']
+
+                # reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
+                db.session.add(result)
+                db.session.commit()                
+            else:
+                abort(404, message='Dates are not right...')
         
         db.session.commit()
         return result
@@ -206,6 +251,7 @@ class Login(Resource):
 
         if result.login == args['login'] and result.password == args['password']:
             session["is_admin"] = result.is_admin
+            session["user_id"] = result.user_id
         else:
             abort(409, message='Bad credentials...')
         
