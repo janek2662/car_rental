@@ -9,7 +9,7 @@ import datetime
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@localhost:5432/cars'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@localhost:5432/project'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "secret"
 db = SQLAlchemy(app)
@@ -26,14 +26,15 @@ db = SQLAlchemy(app)
 #------------------------------------------------------------- MODELS ---------------------------------------------------------------------------#
 
 class CarModel(db.Model):
-    __tablename__ = 'Cars_table1'
+    # __tablename__ = 'Cars_table1'
     id = db.Column(db.Integer, primary_key=True)
     brand = db.Column(db.String(100), nullable=False)
     version = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
-    reservation = db.relationship("Reservations_table1")
+    reservation = db.relationship('ReservationModel')
 
-    def __init__(self, brand, version, year):
+    def __init__(self, id, brand, version, year):
+        self.id = id
         self.brand = brand
         self.version = version
         self.year = year
@@ -43,12 +44,12 @@ class CarModel(db.Model):
     
 
 class UserModel(db.Model):
-    __tablename__ = 'Users_table1'
+    # __tablename__ = 'Users_table1'
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False)
-    reservation = db.relationship("Reservations_table1")
+    reservation = db.relationship('ReservationModel')
 
     def __init__(self, login, password, is_admin):
         self.login = login
@@ -59,12 +60,12 @@ class UserModel(db.Model):
         return '<id {}>'.format(self.id)
 
 class ReservationModel(db.Model):
-    __tablename__ = 'Reservations_table1'
+    # __tablename__ = 'Reservations_table1'
     id = db.Column(db.Integer, primary_key=True)
     date_from = db.Column(db.DateTime, nullable=False)
     date_to = db.Column(db.DateTime, nullable=False)
-    car_id = db.Column(db.Integer, db.ForeignKey("Cars_table1.id"), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("Users_table1.id"), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey("car_model.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user_model.id"), nullable=False)
 
     def __init__(self, car_id, date_from, date_to, user_id):
         self.date_from = date_from
@@ -93,10 +94,10 @@ user_post_args.add_argument("password", type=str, help="Password of the user", r
 user_post_args.add_argument("is_admin", type=inputs.boolean, default=False)
 
 #RESERVATION
-reservation_post_args = reqparse.RequestParser()
-reservation_post_args.add_argument("car_id", type=int, help="ID of the car", required=True)
-reservation_post_args.add_argument("date_from", type=datetime, help="Login of the user", required=True)
-reservation_post_args.add_argument("date_to", type=datetime, help="Password of the user", required=True)
+reservation_put_args = reqparse.RequestParser()
+reservation_put_args.add_argument("car_id", type=int, help="ID of the car", required=True)
+reservation_put_args.add_argument("date_from", type=datetime, help="GIVE ME DATETIME TYPE", required=True)
+reservation_put_args.add_argument("date_to", type=datetime, help="GIVE ME DATETIME TYPE", required=True)
 
 reservation_update_args = reqparse.RequestParser()
 reservation_update_args.add_argument("car_id", type=int, help="ID of the car update")
@@ -138,12 +139,16 @@ class Car(Resource):
         return result
     
     @marshal_with(car_resource_fields)
-    def post(self):
+    def put(self, car_id):
         if session["is_admin"]:
             args = car_post_args.parse_args()
-            car = CarModel(brand=args['brand'], version=args['version'], year=args['year'])
-            db.session.add(car)
-            db.session.commit()
+            car = CarModel.query.filter_by(id=car_id).first()
+            if not car:            
+                car = CarModel(id = car_id, brand=args['brand'], version=args['version'], year=args['year'])
+                db.session.add(car)
+                db.session.commit()
+            else:
+                abort(404, message='Car with such id already exists...')
         else:
             abort(404, message='You need admin privilages...')
 
@@ -175,30 +180,7 @@ class Reservation(Resource):
                 abort(404, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
                 
         return result
-    
-    # CHECK WHETHER CAR IS AVAILABLE AT THAT DATE
-    @marshal_with(reservation_resource_fields)
-    def post(self):
-        if not session["is_admin"] and session["user_id"]:
-            args = reservation_post_args.parse_args()
 
-            date_from = datetime.datetime.strptime(args['date_from'], "%Y-%m-%d").strftime("%d-%m-%Y")
-            date_to = datetime.datetime.strptime(args['date_to'], "%Y-%m-%d").strftime("%d-%m-%Y")
-            results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
-            for result in results:
-                if date_to > result.date_from or date_from < result.date_to:
-                    abort(404, message='Car is booked in that time...')
-
-            if date_from > date_to:
-                reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
-                db.session.add(reservation)
-                db.session.commit()                
-            else:
-                abort(404, message='Dates are not right...')
-        else:
-            abort(404, message='Admin cannot make reservations...')
-
-        return reservation, 201
 
     # reservation from cannot be after resertation to
     # CHECK WHETHER CAR IS AVAILABLE AT THAT DATE
@@ -242,6 +224,31 @@ class Reservation(Resource):
         del videos[car_id]
         return '', 204
 
+class ReservationPost(Resource):
+        
+    @marshal_with(reservation_resource_fields)
+    def post(self):
+        if not session["is_admin"] and session["user_id"]:
+            args = reservation_put_args.parse_args()
+
+            date_from = datetime.datetime.strptime(args['date_from'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            date_to = datetime.datetime.strptime(args['date_to'], "%Y-%m-%d").strftime("%d-%m-%Y")
+            results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
+            for result in results:
+                if date_to > result.date_from or date_from < result.date_to:
+                    abort(404, message='Car is booked in that time...')
+
+            if date_from > date_to:
+                reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
+                db.session.add(reservation)
+                db.session.commit()                
+            else:
+                abort(404, message='Dates are not right...')
+        else:
+            abort(404, message='Admin cannot make reservations...')
+
+        return reservation, 201
+
 class Login(Resource):
     
     @marshal_with(user_resource_fields)
@@ -251,7 +258,7 @@ class Login(Resource):
 
         if result.login == args['login'] and result.password == args['password']:
             session["is_admin"] = result.is_admin
-            session["user_id"] = result.user_id
+            session["user_id"] = result.id
         else:
             abort(409, message='Bad credentials...')
         
@@ -278,7 +285,8 @@ class Register(Resource):
 #-------------------------------------------------------- API RESOURCES ------------------------------------------------------------------------#
 api.add_resource(Login, "/login")
 api.add_resource(Register, "/register")
-api.add_resource(Reservation, "/reservation/<int:res_id>")
+api.add_resource(Reservation, "/reservation/<int:reservation_id>")
+api.add_resource(ReservationPost, "/reservation")
 api.add_resource(Car, "/car/<int:car_id>")
 
 
