@@ -37,6 +37,7 @@ function login(){
             // sessionStorage.setItem("is_logged", "true");
             // sessionStorage.setItem("pass", base64);
             // window.location.href = "http://localhost:3000/dashboard.html";
+            document.getElementById("error").innerHTML = document.cookie;
         } else {
             document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
         }
@@ -116,82 +117,6 @@ function showReservations() {
     http_request.send(null);
 }
 
-// function showCars() {
-//     var url = "http://localhost:5000/dashboard";
-//     var base64 = sessionStorage.getItem("pass");
-//     var userLogged = sessionStorage.getItem("isLogged");
-//     var isAdmin = sessionStorage.getItem("isAdmin");
-
-//     http_request = new XMLHttpRequest();
-//     http_request.onload = function(xhr) {
-//         if (xhr.target.status == 200 && userLogged == "true") {
-//             var data = JSON.parse(xhr.target.response);
-//             if(isAdmin == "true") {
-//                 document.getElementById("data").innerHTML =
-//                     data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
-//                         +val.id+"</th><td>"+val.title+"</td><td>"+val.author+"</td><td>"+val.year
-//                         +"</td><td><button type='button' class='btn btn-primary' onclick={deleteBook("+val.id+")};window.location.reload();>Usuń książkę</button></td></tr>" ; }).join('');
-//             } else {
-//                 document.getElementById("data").innerHTML =
-//                     data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
-//                         +val.id+"</th><td>"+val.title+"</td><td>"+val.author+"</td><td>"+val.year
-//                         +"</td><td></td></tr>" ; }).join('');
-//             }
-//         } else {
-//             window.location.href = "http://localhost:3000/index.html";
-//         }
-//     }
-
-//     http_request.open('GET', url, true);
-//     http_request.setRequestHeader("Authorization", "Basic "+ base64);
-//     http_request.send(null);
-// }
-//
-// function addCar() {
-//     var url = "http://localhost:8080/SimpleLibrarySpring/dashboard/";
-//     var base64 = sessionStorage.getItem("pass");
-//     var userLogged = sessionStorage.getItem("isLogged");
-//     var isAdmin = sessionStorage.getItem("isAdmin");
-
-//     const dataToSend = {
-//         author:document.getElementById("author").value,
-//         title:document.getElementById("title").value,
-//         year:document.getElementById("year").value
-//     }
-
-//     http_request = new XMLHttpRequest();
-//     if(isAdmin == "true") {
-//         var jsonString = JSON.stringify(dataToSend);
-//         http_request.open('POST', url);
-//         http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-//         http_request.setRequestHeader("Authorization", "Basic "+ base64);
-//         http_request.send(jsonString);
-//         document.getElementById("meassage").innerHTML = "Książka dodana";
-//     }
-// }
-//
-// function showAddReservationForm(){
-//     var isAdmin = sessionStorage.getItem("isAdmin");
-
-//     if(isAdmin == "true"){
-//         document.getElementById("bookadd").innerHTML =   "<div class='col-lg-6 text-center'>"
-//             +"   <h1 class='mt-5'>Dodaj książkę</h1>"
-//             +"   <form>"
-//             +"   <div class='form-group'>"
-//             +"     <input type='text' class='form-control' id='author' placeholder='Autor' required>"
-//             +"     <input type='text' class='form-control' id='title' placeholder='Tytuł' required'>"
-//             +"      <input type='text' class='form-control' id='year' placeholder='Rok wydania' required>"
-//             +"     </div>"
-//             +"   </form>"
-//             +"   <button type='button' class='btn btn-primary' onclick={addBook()};window.location.reload();>Dodaj książkę</button>"
-//             +" </div>"
-//             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
-//             +"</div>";
-//     }else{
-//         document.getElementById("bookadd").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
-//     }
-// }
-//
 function deleteReservation(id) {
     var url = "http://localhost:5000/reservation/"+id;
     var isAdmin = sessionStorage.getItem("isAdmin");
@@ -304,21 +229,24 @@ function showDeleteCarForm(){
 function addReservation() {
     var url = "http://localhost:5000/reservation";
     var isAdmin = sessionStorage.getItem("isAdmin");
+    var car_id = document.getElementById("car_id").value;
+    var date_from = document.getElementById("date_from").value;
+    var date_to = document.getElementById("date_to").value;
 
 
-    const dataToSend = {
-        car_id:document.getElementById("car_id").value,
-        date_from:document.getElementById("date_from").value,
-        date_to:document.getElementById("date_to").value
-    }
+    var params = new FormData();
+    params.append('car_id', car_id);
+    params.append('date_from', date_from);
+    params.append('date_to', date_to);
+    
 
     http_request = new XMLHttpRequest();
     if(isAdmin == "false") {
-        var jsonString = JSON.stringify(dataToSend);
+        // var jsonString = JSON.stringify(dataToSend);
         http_request.open('POST', url);
-        http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        // http_request.setRequestHeader("Authorization", "Basic "+ base64);
-        http_request.send(jsonString);
+        // http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http_request.send(params);
+        // http_request.send(jsonString);
         document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
     }
 }
@@ -326,20 +254,23 @@ function addReservation() {
 function patchReservation() {
     var url = "http://localhost:5000/reservation";
     var isAdmin = sessionStorage.getItem("isAdmin");
+    var reservation_id = document.getElementById("reservation_id").value;
+    var date_from = document.getElementById("date_from").value;
+    var date_to = document.getElementById("date_to").value;
 
-    const dataToSend = {
-        reservation_id:document.getElementById("reservation_id").value,
-        date_from:document.getElementById("date_from").value,
-        date_to:document.getElementById("date_to").value
-    }
+
+    var params = new FormData();
+    params.append('reservation_id', reservation_id);
+    params.append('date_from', date_from);
+    params.append('date_to', date_to);
 
     http_request = new XMLHttpRequest();
     if(isAdmin == "false") {
-        var jsonString = JSON.stringify(dataToSend);
+        // var jsonString = JSON.stringify(dataToSend);
         http_request.open('PATCH', url);
-        http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        // http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         // http_request.setRequestHeader("Authorization", "Basic "+ base64);
-        http_request.send(jsonString);
+        http_request.send(params);
         document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
     }
 }
@@ -348,21 +279,25 @@ function patchReservation() {
 function addCar() {
     var isAdmin = sessionStorage.getItem("isAdmin");
 
-    const dataToSend = {
-        brand:document.getElementById("brand").value,
-        version:document.getElementById("version").value,
-        year:document.getElementById("year").value
-    }
+    var brand = document.getElementById("brand").value;
+    var version = document.getElementById("version").value;
+    var year = document.getElementById("year").value;
+
+
+    var params = new FormData();
+    params.append('brand', brand);
+    params.append('version', version);
+    params.append('year', year);
 
     var url = "http://localhost:5000/car/" + document.getElementById("car_id").value;
-    
+
     http_request = new XMLHttpRequest();
     if(isAdmin == "true") {
-        var jsonString = JSON.stringify(dataToSend);
+        // var jsonString = JSON.stringify(dataToSend);
         http_request.open('PUT', url);
-        http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        // http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         // http_request.setRequestHeader("Authorization", "Basic "+ base64);
-        http_request.send(jsonString);
+        http_request.send(params);
         document.getElementById("meassage").innerHTML = "Samochód dodany";
     }
 }
