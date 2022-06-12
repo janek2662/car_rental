@@ -255,7 +255,7 @@ class ReservationPost(Resource):
             
             results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
             for result in results:
-                if (date_from > result.date_from and date_from < result.date_to) or (date_to > result.date_from and date_to < result.date_to):
+                if (date_from >= result.date_from and date_from <= result.date_to) or (date_to >= result.date_from and date_to <= result.date_to) or (date_from <= result.date_from and date_to >= result.date_to):
                     abort(404, message='Car is booked in that time...')
         else:
             abort(404, message='Admin cannot make reservations...')
