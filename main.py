@@ -172,7 +172,7 @@ class Reservation(Resource):
     def get(self, reservation_id):
         if session["is_admin"]:
             result = ReservationModel.query.filter_by(id=reservation_id).first()
-            if not result:
+            if result is None:
                 abort(404, message='Could not find reservation with that id...')
         else:
             result = ReservationModel.query.filter_by(id=reservation_id).first()
