@@ -14,11 +14,6 @@ function login(){
     var pwd = document.getElementById("pwd").value;
     // var base64 = btoa(login+":"+pwd)
 
-// function login(){
-//     var url = "http://localhost:5000/login";
-//     var login = document.getElementById("usr").value;
-//     var pwd = document.getElementById("pwd").value;
-//     var base64 = btoa(login+":"+pwd)
 
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
@@ -90,10 +85,7 @@ function register(){
 
 function showCars() {
     var url = "http://localhost:5000/car";
-    var base64 = sessionStorage.getItem("pass");
-    // var userLogged = sessionStorage.getItem("isLogged");
-    var userLogged = "true";
-    var isAdmin = sessionStorage.getItem("is_admin");
+    var isAdmin = sessionStorage.getItem("isAdmin");
     
     http_request = new XMLHttpRequest();
     http_request.open('GET', url, true);
@@ -110,10 +102,6 @@ function showCars() {
 
 function showReservations() {
     var url = "http://localhost:5000/reservation";
-    var base64 = sessionStorage.getItem("pass");
-    // var userLogged = sessionStorage.getItem("isLogged");
-    var userLogged = "true";
-    var isAdmin = sessionStorage.getItem("is_admin");
     
     http_request = new XMLHttpRequest();
     http_request.open('GET', url, true);
@@ -124,7 +112,7 @@ function showReservations() {
                 +val.id+"</th><td>"+val.car_id+"</td><td>"+val.date_from+"</td><td>"+val.date_to
                 +"</td><td><button type='button' class='btn btn-primary' onclick={deleteReservation("+val.id+")};>Usuń Rezerwacje</button></td></tr>" ; }).join('');
     }
-
+    
     http_request.send(null);
 }
 
@@ -206,30 +194,30 @@ function showReservations() {
 //
 function deleteReservation(id) {
     var url = "http://localhost:5000/reservation/"+id;
-    var base64 = sessionStorage.getItem("pass");
-    var userLogged = sessionStorage.getItem("isLogged");
+    var isAdmin = sessionStorage.getItem("isAdmin");
 
-    http_request = new XMLHttpRequest();
-    http_request.open('DELETE', url, true);
-    // http_request.setRequestHeader("Authorization", "Basic "+ base64);
-    http_request.send(null);
+    if(isAdmin == "false") {
+        http_request = new XMLHttpRequest();
+        http_request.open('DELETE', url, true);
+        http_request.send(null);
+    }
 }
 
 function deleteCar() {
     var url = "http://localhost:5000/car/"+document.getElementById("car_id").value;
-    var base64 = sessionStorage.getItem("pass");
-    var userLogged = sessionStorage.getItem("isLogged");
+    var isAdmin = sessionStorage.getItem("isAdmin");
 
-    http_request = new XMLHttpRequest();
-    http_request.open('DELETE', url, true);
-    // http_request.setRequestHeader("Authorization", "Basic "+ base64);
-    http_request.send(null);
+    if(isAdmin == "true") {
+        http_request = new XMLHttpRequest();
+        http_request.open('DELETE', url, true);
+        http_request.send(null);
+    }
 }
 
 function showAddReservationForm(){
     var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true"
-    if(isAdmin == "true"){
+
+    if(isAdmin == "false"){
         document.getElementById("reservationadd").innerHTML =   "<div class='col-lg-6 text-center'>"
             +"   <h1 class='mt-5'>Dodaj rezerwacje</h1>"
             +"   <form>"
@@ -250,8 +238,8 @@ function showAddReservationForm(){
 
 function showPatchForm(){
     var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true"
-    if(isAdmin == "true"){
+
+    if(isAdmin == "false"){
         document.getElementById("reservationpatch").innerHTML =   "<div class='col-lg-6 text-center'>"
             +"   <h1 class='mt-5'>Zmodyfikuj rezerwacje</h1>"
             +"   <form>"
@@ -272,7 +260,7 @@ function showPatchForm(){
 
 function showAddCarForm(){
     var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true"
+
     if(isAdmin == "true"){
         document.getElementById("caradd").innerHTML =   "<div class='col-lg-6 text-center'>"
             +"   <h1 class='mt-5'>Dodaj samochod</h1>"
@@ -295,7 +283,7 @@ function showAddCarForm(){
 
 function showDeleteCarForm(){
     var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true"
+
     if(isAdmin == "true"){
         document.getElementById("cardelete").innerHTML =   "<div class='col-lg-6 text-center'>"
             +"   <h1 class='mt-5'>Usun samochod</h1>"
@@ -315,10 +303,8 @@ function showDeleteCarForm(){
 
 function addReservation() {
     var url = "http://localhost:5000/reservation";
-    // var base64 = sessionStorage.getItem("pass");
-    // var userLogged = sessionStorage.getItem("isLogged");
-    // var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true";
+    var isAdmin = sessionStorage.getItem("isAdmin");
+
 
     const dataToSend = {
         car_id:document.getElementById("car_id").value,
@@ -327,7 +313,7 @@ function addReservation() {
     }
 
     http_request = new XMLHttpRequest();
-    if(isAdmin == "true") {
+    if(isAdmin == "false") {
         var jsonString = JSON.stringify(dataToSend);
         http_request.open('POST', url);
         http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -339,10 +325,7 @@ function addReservation() {
 
 function patchReservation() {
     var url = "http://localhost:5000/reservation";
-    // var base64 = sessionStorage.getItem("pass");
-    // var userLogged = sessionStorage.getItem("isLogged");
-    // var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true";
+    var isAdmin = sessionStorage.getItem("isAdmin");
 
     const dataToSend = {
         reservation_id:document.getElementById("reservation_id").value,
@@ -351,7 +334,7 @@ function patchReservation() {
     }
 
     http_request = new XMLHttpRequest();
-    if(isAdmin == "true") {
+    if(isAdmin == "false") {
         var jsonString = JSON.stringify(dataToSend);
         http_request.open('PATCH', url);
         http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -363,11 +346,7 @@ function patchReservation() {
 
 
 function addCar() {
-    // var url = "http://localhost:5000/car";
-    // var base64 = sessionStorage.getItem("pass");
-    // var userLogged = sessionStorage.getItem("isLogged");
-    // var isAdmin = sessionStorage.getItem("isAdmin");
-    var isAdmin = "true";
+    var isAdmin = sessionStorage.getItem("isAdmin");
 
     const dataToSend = {
         brand:document.getElementById("brand").value,
@@ -376,6 +355,7 @@ function addCar() {
     }
 
     var url = "http://localhost:5000/car/" + document.getElementById("car_id").value;
+    
     http_request = new XMLHttpRequest();
     if(isAdmin == "true") {
         var jsonString = JSON.stringify(dataToSend);
