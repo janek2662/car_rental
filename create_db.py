@@ -9,7 +9,11 @@ conn = psycopg2.connect(
 conn.autocommit = True
 # Open a cursor to perform database operations
 cur = conn.cursor()
-
+INSERT INTO user_model (login, password, is_admin) VALUES ('admin', 'admin', True);
+INSERT INTO user_model (login, password, is_admin) VALUES ('admin', 'admin', True);
+INSERT INTO user_model (login, password, is_admin) VALUES ('admin', 'admin', True);
+INSERT INTO user_model (login, password, is_admin) VALUES ('admin', 'admin', True);
+INSERT INTO user_model (login, password, is_admin) VALUES ('admin', 'admin', True);
 
 
 # Execute a command: this creates a new table

@@ -12,9 +12,17 @@ class FlaskTest(unittest2.TestCase):
     BASE = "http://127.0.0.1:5000/"
 
     
-    #check for response 200
     def test_login(self):
         response = requests.post(FlaskTest.API_URL_LOGIN, {"login": "admin", "password": "admin"})
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_register(self):
+        letters = string.ascii_lowercase
+        login = ''.join(random.choice(letters) for i in range(10))
+        password = ''.join(random.choice(letters) for i in range(10))
+
+        response = requests.post(FlaskTest.API_URL_REGISTER, {"login": login, "password": password})
         statuscode = response.status_code
         self.assertEqual(statuscode, 200)
 
@@ -26,15 +34,6 @@ class FlaskTest(unittest2.TestCase):
         response = requests.post(FlaskTest.API_URL_LOGIN, {"login": login, "password": password})
         statuscode = response.status_code
         self.assertEqual(statuscode, 409)
-
-    def test_register(self):
-        letters = string.ascii_lowercase
-        login = ''.join(random.choice(letters) for i in range(10))
-        password = ''.join(random.choice(letters) for i in range(10))
-
-        response = requests.post(FlaskTest.API_URL_REGISTER, {"login": login, "password": password})
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
     
     def test_register_fail(self):
         response = requests.post(FlaskTest.API_URL_REGISTER, {"login": "admin", "password": "admin"})
@@ -81,7 +80,7 @@ class FlaskTest(unittest2.TestCase):
         response = requests.put(FlaskTest.BASE + "car/{}".format(random_num), {"brand": "toyota", "version": 2, "year": 2005}, cookies=cookie)
         response = requests.delete(FlaskTest.BASE + "car/{}".format(random_num), cookies=cookie)
         statuscode = response.status_code
-        self.assertEqual(statuscode, 204)
+        self.assertEqual(statuscode, 200)
     
     def test_delete_car_fail(self):
         response_login = requests.post(FlaskTest.API_URL_LOGIN, {"login": "admin", "password": "admin"})

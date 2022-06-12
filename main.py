@@ -191,8 +191,8 @@ class Reservation(Resource):
             result = ReservationModel.query.filter_by(id=reservation_id).first()
             if result is None:
                 abort(404, message='Could not find reservation with that id...')
-            if not result.user_id == session["user_id"]:
-                abort(403, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
+            if not (result.user_id == session["user_id"]):
+                abort(403, message='Could not find reservation with that id...')
                 
         return result, 200
 
@@ -237,18 +237,18 @@ class Reservation(Resource):
         return result, 200
     
     def delete(self, reservation_id):
-        if session["user_id"]:
-            result = ReservationModel.query.filter_by(id=reservation_id).first()
-            if result is None:
-                abort(404, message='No reservation with this id...')
-            db.session.delete(result)
-            db.session.commit()
-        else:
-            abort(403, message='You need to be logged in...')
+        # if session["user_id"]:
+        result = ReservationModel.query.filter_by(id=reservation_id).first()
+        if result is None:
+            abort(404, message='No reservation with this id...')
+        db.session.delete(result)
+        db.session.commit()
+        # else:
+        #     abort(403, message='You need to be logged in...')
         
         return '', 204
 
-class ReservationPost(Resource):
+class ReservationAll(Resource):
 
     @marshal_with(reservation_resource_fields)
     def get(self):
@@ -260,33 +260,33 @@ class ReservationPost(Resource):
             result = ReservationModel.query.filter_by(user_id=session["user_id"]).all()
             if result is None:
                 abort(404, message='Could not find reservation with that id...')
-                
+
         return result, 200
     
     @marshal_with(reservation_resource_fields)
     def post(self):
-        if not session["is_admin"] and session["user_id"]:
-            args = reservation_put_args.parse_args()
+        # if not session["is_admin"] and session["user_id"]:
+        args = reservation_put_args.parse_args()
 
-            try:
-                date_from = datetime.strptime(args['date_from'], '%Y-%m-%d')
-                date_to = datetime.strptime(args['date_to'], '%Y-%m-%d')
-            except:
-                abort(404, message='Bad datetime format...')
-      
-            if date_to < date_from:
-                abort(404, message='Dates are not correct')
-            
-            results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
-            for result in results:
-                if (date_from >= result.date_from and date_from <= result.date_to) or (date_to >= result.date_from and date_to <= result.date_to) or (date_from <= result.date_from and date_to >= result.date_to):
-                    abort(404, message='Car is booked in that time...')
+        try:
+            date_from = datetime.strptime(args['date_from'], '%Y-%m-%d')
+            date_to = datetime.strptime(args['date_to'], '%Y-%m-%d')
+        except:
+            abort(404, message='Bad datetime format...')
+    
+        if date_to < date_from:
+            abort(404, message='Dates are not correct')
+        
+        results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
+        for result in results:
+            if (date_from >= result.date_from and date_from <= result.date_to) or (date_to >= result.date_from and date_to <= result.date_to) or (date_from <= result.date_from and date_to >= result.date_to):
+                abort(404, message='Car is booked in that time...')
 
-            reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
-            db.session.add(reservation)
-            db.session.commit()                
-        else:
-            abort(403, message='Admin cannot make reservations...')
+        reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
+        db.session.add(reservation)
+        db.session.commit()                
+        # else:
+        #     abort(403, message='Admin cannot make reservations...')
 
         return reservation, 200
 
@@ -329,7 +329,7 @@ class Register(Resource):
 api.add_resource(Login, "/login")
 api.add_resource(Register, "/register")
 api.add_resource(Reservation, "/reservation/<int:reservation_id>")
-api.add_resource(ReservationPost, "/reservation")
+api.add_resource(ReservationAll, "/reservation")
 api.add_resource(Car, "/car/<int:car_id>")
 api.add_resource(CarAll, "/car")
 
