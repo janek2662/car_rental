@@ -168,6 +168,16 @@ class Car(Resource):
         
         return '', 204
 
+class CarAll(Resource):
+
+    @marshal_with(car_resource_fields)
+    def get(self):
+        result = CarModel.query.all()
+        if not result:
+            abort(404, message='Could not find car with that id...')
+
+        return result, 200
+    
 class Reservation(Resource):
 
     @marshal_with(reservation_resource_fields)
@@ -238,7 +248,20 @@ class Reservation(Resource):
         return '', 204
 
 class ReservationPost(Resource):
-        
+
+    @marshal_with(reservation_resource_fields)
+    def get(self):
+        if session["is_admin"]:
+            result = ReservationModel.query.all()
+            if result is None:
+                abort(404, message='Could not find reservation with that id...')
+        else:
+            result = ReservationModel.query.filter_by(user_id=session["user_id"]).all()
+            if result is None:
+                abort(404, message='Could not find reservation with that id...')
+                
+        return result, 200
+    
     @marshal_with(reservation_resource_fields)
     def post(self):
         if not session["is_admin"] and session["user_id"]:
@@ -307,6 +330,7 @@ api.add_resource(Register, "/register")
 api.add_resource(Reservation, "/reservation/<int:reservation_id>")
 api.add_resource(ReservationPost, "/reservation")
 api.add_resource(Car, "/car/<int:car_id>")
+api.add_resource(CarAll, "/car")
 
 
 #-------------------------------------------------------- MAIN ------------------------------------------------------------------------#
