@@ -248,17 +248,17 @@ class ReservationPost(Resource):
             except:
                 abort(404, message='Bad datetime format...')
       
-            if date_to > date_from:
-                reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
-                db.session.add(reservation)
-                db.session.commit()                
-            else:
+            if date_to < date_from:
                 abort(404, message='Dates are not correct')
             
             results = ReservationModel.query.filter_by(car_id=args['car_id']).all()
             for result in results:
                 if (date_from >= result.date_from and date_from <= result.date_to) or (date_to >= result.date_from and date_to <= result.date_to) or (date_from <= result.date_from and date_to >= result.date_to):
                     abort(404, message='Car is booked in that time...')
+
+            reservation = ReservationModel(date_from=args['date_from'], date_to=args['date_to'], car_id=args['car_id'], user_id=session["user_id"])
+            db.session.add(reservation)
+            db.session.commit()                
         else:
             abort(404, message='Admin cannot make reservations...')
 
