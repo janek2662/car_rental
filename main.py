@@ -5,11 +5,12 @@ from sqlalchemy.ext.hybrid import hybrid_property
 import psycopg2
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, time
-from flask_cors import CORS
+from flask_cors import CORS 
+from datetime import timedelta
 
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/*": {"origins":"*"}})
+cors = CORS(app, resources={r"/*": {"origins":"*"}}, supports_credentials=True)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@localhost:5432/project'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -274,14 +275,14 @@ class Login(Resource):
         result = UserModel.query.filter_by(login=args['login']).first()
 
         if result is None:
-            abort(409, message='Bad credentials...')
+            abort(404, message='Bad credentials...')
         if result.login == args['login'] and result.password == args['password']:
             session["is_admin"] = result.is_admin
             session["user_id"] = result.id
         else:
-            abort(409, message='Bad credentials...')
+            abort(404, message='Bad credentials...')
         
-        return result, 201
+        return result, 200
 
 class Register(Resource):
     

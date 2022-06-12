@@ -1,28 +1,38 @@
 
-// function login(){
-//     var url = "http://localhost:5000/dashboard/";
-//     var login = document.getElementById("usr").value;
-//     var pwd = document.getElementById("pwd").value;
-//     var base64 = btoa(login+":"+pwd)
+function login(){
+    var url = "http://localhost:5000/login";
+    var login = document.getElementById("usr").value;
+    var pwd = document.getElementById("pwd").value;
+    // var base64 = btoa(login+":"+pwd)
 
-//     http_request = new XMLHttpRequest();
-//     http_request.onload = function(xhr) {
-//         if (xhr.target.status == 200) {
-//             if(login == "admin") {
-//                 sessionStorage.setItem("is_admin", "true");
-//             }
-//             sessionStorage.setItem("is_logged", "true");
-//             sessionStorage.setItem("pass", base64);
-//             window.location.href = "http://localhost:5000/dashboard.html";
-//         } else {
-//             document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
-//         }
-//     }
+    http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
 
-//     http_request.open('GET', url, true);
-//     http_request.setRequestHeader("Authorization", "Basic "+ base64);
-//     http_request.send(null);
-// }
+    http_request.open('POST', url, true);
+    
+    var params = new FormData();
+    params.append('login', login);
+    params.append('password', pwd);
+
+    http_request.send(params);
+
+    http_request.onload = function(xhr) {
+        if (xhr.target.status == 200) {
+            // console.log(http_request.getResponseHeader("Set-Cookie"));
+            // document.cookie = http_request.getResponseHeader("Set-Cookie");
+            
+            // if(login == "admin") {
+            //     sessionStorage.setItem("is_admin", "true");
+            // }
+            // sessionStorage.setItem("is_logged", "true");
+            // sessionStorage.setItem("pass", base64);
+            // window.location.href = "http://localhost:3000/dashboard.html";
+        } else {
+            document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
+        }
+    }
+
+}
 
 function register(){
     var url = "http://localhost:5000/register";
