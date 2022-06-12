@@ -5,9 +5,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 import psycopg2
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, time
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins":"*"}})
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@localhost:5432/project'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
