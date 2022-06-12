@@ -136,7 +136,7 @@ class Car(Resource):
         if not result:
             abort(404, message='Could not find car with that id...')
 
-        return result
+        return result, 200
     
     @marshal_with(car_resource_fields)
     def put(self, car_id):
@@ -150,7 +150,7 @@ class Car(Resource):
             else:
                 abort(404, message='Car with such id already exists...')
         else:
-            abort(404, message='You need admin privilages...')
+            abort(403, message='You need admin privilages...')
 
         return car, 201
     
@@ -162,7 +162,7 @@ class Car(Resource):
             db.session.delete(car)
             db.session.commit()
         else:
-            abort(404, message='You need admin privilages...')
+            abort(403, message='You need admin privilages...')
         
         return '', 204
 
@@ -179,9 +179,9 @@ class Reservation(Resource):
             if result is None:
                 abort(404, message='Could not find reservation with that id...')
             if not result.user_id == session["user_id"]:
-                abort(404, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
+                abort(403, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
                 
-        return result
+        return result, 200
 
 
     @marshal_with(reservation_resource_fields)
@@ -221,7 +221,7 @@ class Reservation(Resource):
                 abort(404, message='Dates are not right...')
         
         db.session.commit()
-        return result
+        return result, 200
     
     def delete(self, reservation_id):
         if session["user_id"]:
@@ -231,7 +231,7 @@ class Reservation(Resource):
             db.session.delete(result)
             db.session.commit()
         else:
-            abort(404, message='You need to be logged in...')
+            abort(403, message='You need to be logged in...')
         
         return '', 204
 
@@ -260,9 +260,9 @@ class ReservationPost(Resource):
             db.session.add(reservation)
             db.session.commit()                
         else:
-            abort(404, message='Admin cannot make reservations...')
+            abort(403, message='Admin cannot make reservations...')
 
-        return reservation, 201
+        return reservation, 200
 
 class Login(Resource):
     
@@ -271,6 +271,8 @@ class Login(Resource):
         args = user_post_args.parse_args()
         result = UserModel.query.filter_by(login=args['login']).first()
 
+        if result is None:
+            abort(409, message='Bad credentials...')
         if result.login == args['login'] and result.password == args['password']:
             session["is_admin"] = result.is_admin
             session["user_id"] = result.id
