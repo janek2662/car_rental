@@ -176,6 +176,8 @@ class Reservation(Resource):
                 abort(404, message='Could not find reservation with that id...')
         else:
             result = ReservationModel.query.filter_by(id=reservation_id).first()
+            if result is None:
+                abort(404, message='Could not find reservation with that id...')
             if not result.user_id == session["user_id"]:
                 abort(404, message='Could not find reservation with that id... (debug: user is not allowed to see other reservations)')
                 
