@@ -165,9 +165,10 @@ function showAddReservationForm(){
             +" </div>"
             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
             +"</div>";
-    }else{
-        document.getElementById("reservationadd").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
     }
+    // else{
+    //     document.getElementById("reservationadd").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
+    // }
 }
 
 function showPatchForm(){
@@ -188,9 +189,10 @@ function showPatchForm(){
             +" </div>"
             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
             +"</div>";
-    }else{
-        document.getElementById("reservationpatch").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
     }
+    // else{
+    //     document.getElementById("reservationpatch").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
+    // }
 }
 
 function showAddCarForm(){
