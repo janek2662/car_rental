@@ -12,6 +12,15 @@ services:
       - 5432:5432
     volumes: 
       - db:/var/lib/postgresql/data
+  backend:
+    build: ./
+    restart: always
+    ports:
+      - 5000:5000
+  frontend:
+    build: ./front
+    ports:
+      - 3000:3000
 volumes:
   db:
     driver: local

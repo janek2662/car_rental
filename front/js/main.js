@@ -9,34 +9,41 @@ function start(){
 }
 
 function login(){
-    var url = "http://localhost:5000/login";
-    var login = document.getElementById("usr").value;
-    var pwd = document.getElementById("pwd").value;
-    
-    if(login == "admin"){
-        sessionStorage.setItem("isAdmin", "true");
-    } else {
-        sessionStorage.setItem("isAdmin", "false");
-    }
-
-    http_request = new XMLHttpRequest();
-    http_request.withCredentials = true;
-
-    http_request.open('POST', url, true);
-    
-    var params = new FormData();
-    params.append('login', login);
-    params.append('password', pwd);
-
-    http_request.send(params);
-
-    http_request.onload = function(xhr) {
-        if (xhr.target.status == 200) {
-            window.location.href = "http://localhost:3000/dashboard.html";
+    return new Promise(() => {
+        var url = "http://localhost:5000/login";
+        var login = document.getElementById("usr").value;
+        var pwd = document.getElementById("pwd").value;
+        
+        if(login == "admin"){
+            sessionStorage.setItem("isAdmin", "true");
         } else {
-            document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
+            sessionStorage.setItem("isAdmin", "false");
         }
-    }
+
+        http_request = new XMLHttpRequest();
+        http_request.withCredentials = true;
+
+        http_request.open('POST', url, true);
+        
+        var params = new FormData();
+        params.append('login', login);
+        params.append('password', pwd);
+
+        http_request.onload = function(xhr) {
+            if (xhr.target.status == 200) {
+                window.location.href = "http://localhost:3000/dashboard.html";
+            } else {
+                document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
+            }
+        }
+        http_request.send(params);
+    })
+        .then(function(result) {
+        return result;
+        })
+        .catch(error => {
+        return error;
+        });
 
 }
 
@@ -113,16 +120,17 @@ function showReservations() {
     var url = "http://localhost:5000/reservation";
     
     http_request = new XMLHttpRequest();
-    http_request.open('GET', url, true);
     http_request.withCredentials = true;
     http_request.onload = function(xhr) {
-        var data = JSON.parse(xhr.target.response);
-        document.getElementById("reservations").innerHTML =
-            data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
-                +val.id+"</th><td>"+val.car_id+"</td><td>"+val.date_from+"</td><td>"+val.date_to
-                +"</td><td><button type='button' class='btn btn-primary' onclick={deleteReservation("+val.id+")};>Usuń Rezerwacje</button></td></tr>" ; }).join('');
+        if (http_request.status == 200) {
+            var data = JSON.parse(xhr.target.response);
+            document.getElementById("reservations").innerHTML =
+                data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
+                    +val.id+"</th><td>"+val.car_id+"</td><td>"+val.date_from+"</td><td>"+val.date_to
+                    +"</td><td><button type='button' class='btn btn-primary' onclick={deleteReservation("+val.id+")};>Usuń Rezerwacje</button></td></tr>" ; }).join('');
+        }
     }
-    
+    http_request.open('GET', url, true);
     http_request.send(null);
 }
 
@@ -134,6 +142,7 @@ function deleteReservation(id) {
     http_request.withCredentials = true;
     http_request.open('DELETE', url, true);
     http_request.send(null);
+    
 }
 
 function deleteCar(id) {
@@ -236,11 +245,16 @@ function addReservation() {
     http_request.withCredentials = true;
     if(isAdmin == "false") {
         // var jsonString = JSON.stringify(dataToSend);
+        http_request.onreadystatechange = function() {
+            if (this.status == 200) {
+            document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
+            }
+          };
         http_request.open('POST', url, true);
 
         http_request.send(params);
 
-        document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
+        
     }
 }
 
@@ -294,3 +308,5 @@ function addCar() {
         document.getElementById("meassage").innerHTML = "Samochód dodany";
     }
 }
+
+module.exports = login();

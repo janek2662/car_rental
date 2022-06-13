@@ -12,7 +12,7 @@ from datetime import timedelta
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins":"*"}}, supports_credentials=True)
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@localhost:5432/project'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres+psycopg2://user:password@db:5432/project'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "secret"
 db = SQLAlchemy(app)
@@ -336,4 +336,4 @@ api.add_resource(CarAll, "/car")
 
 #-------------------------------------------------------- MAIN ------------------------------------------------------------------------#
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
