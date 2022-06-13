@@ -86,13 +86,25 @@ function showCars() {
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
     http_request.open('GET', url, true);
-    http_request.onload = function(xhr) {
-        var data = JSON.parse(xhr.target.response);
-        document.getElementById("data").innerHTML =
-            data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
-                +val.id+"</th><td>"+val.brand+"</td><td>"+val.version+"</td><td>"+val.year
-                +"</td><td></td></tr>" ; }).join('');
-    }
+    if(isAdmin == "false") {
+        http_request.onload = function(xhr) {
+            var data = JSON.parse(xhr.target.response);
+            document.getElementById("data").innerHTML =
+                data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
+                    +val.id+"</th><td>"+val.brand+"</td><td>"+val.version+"</td><td>"+val.year
+                    +"</td><td></td></tr>" ; }).join('');
+        }
+    } else if (isAdmin == "true"){
+        http_request.onload = function(xhr) {
+            var data = JSON.parse(xhr.target.response);
+            document.getElementById("data").innerHTML =
+                data.map(function(val) { return "<tr><th id ="+val.id+" scope='row'>"
+                    +val.id+"</th><td>"+val.brand+"</td><td>"+val.version+"</td><td>"+val.year
+                    +"</td><td><button type='button' class='btn btn-primary' onclick={deleteCar("+val.id+")};>Usuń Samochód</button></td></tr>" ; }).join('');
+        }
+    } 
+    
+
 
     http_request.send(null);
 }
@@ -126,8 +138,8 @@ function deleteReservation(id) {
     }
 }
 
-function deleteCar() {
-    var url = "http://localhost:5000/car/"+ document.getElementById("car_id").value;
+function deleteCar(id) {
+    var url = "http://localhost:5000/car/"+id;
     var isAdmin = sessionStorage.getItem("isAdmin");
 
     if(isAdmin == "true") {
@@ -205,25 +217,6 @@ function showAddCarForm(){
     }
 }
 
-function showDeleteCarForm(){
-    var isAdmin = sessionStorage.getItem("isAdmin");
-
-    if(isAdmin == "true"){
-        document.getElementById("cardelete").innerHTML =   "<div class='col-lg-6 text-center'>"
-            +"   <h1 class='mt-5'>Usun samochod</h1>"
-            +"   <form>"
-            +"   <div class='form-group'>"
-            +"     <input type='text' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
-            +"     </div>"
-            +"   </form>"
-            +"   <button type='button' class='btn btn-primary' onclick={deleteCar()};>Usun samochod</button>"
-            +" </div>"
-            +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
-            +"</div>";
-    }else{
-        document.getElementById("cardelete").innerHTML = "Nieautoryzowany dostęp (tylko dla ADMINA)";
-    }
-}
 
 function addReservation() {
     var url = "http://localhost:5000/reservation";
