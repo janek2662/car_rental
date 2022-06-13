@@ -9,41 +9,33 @@ function start(){
 }
 
 function login(){
-    return new Promise(() => {
-        var url = "http://localhost:5000/login";
-        var login = document.getElementById("usr").value;
-        var pwd = document.getElementById("pwd").value;
-        
-        if(login == "admin"){
-            sessionStorage.setItem("isAdmin", "true");
+    var url = "http://localhost:5000/login";
+    var login = document.getElementById("usr").value;
+    var pwd = document.getElementById("pwd").value;
+    
+    if(login == "admin"){
+        sessionStorage.setItem("isAdmin", "true");
+    } else {
+        sessionStorage.setItem("isAdmin", "false");
+    }
+
+    http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
+
+    http_request.open('POST', url, true);
+    
+    var params = new FormData();
+    params.append('login', login);
+    params.append('password', pwd);
+
+    http_request.onload = function(xhr) {
+        if (xhr.target.status == 200) {
+            window.location.href = "http://localhost:3000/dashboard.html";
         } else {
-            sessionStorage.setItem("isAdmin", "false");
+            document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
         }
-
-        http_request = new XMLHttpRequest();
-        http_request.withCredentials = true;
-
-        http_request.open('POST', url, true);
-        
-        var params = new FormData();
-        params.append('login', login);
-        params.append('password', pwd);
-
-        http_request.onload = function(xhr) {
-            if (xhr.target.status == 200) {
-                window.location.href = "http://localhost:3000/dashboard.html";
-            } else {
-                document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
-            }
-        }
-        http_request.send(params);
-    })
-        .then(function(result) {
-        return result;
-        })
-        .catch(error => {
-        return error;
-        });
+    }
+    http_request.send(params);
 
 }
 
@@ -308,5 +300,3 @@ function addCar() {
         document.getElementById("meassage").innerHTML = "Samochód dodany";
     }
 }
-
-module.exports = login();
