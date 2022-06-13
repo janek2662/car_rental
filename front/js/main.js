@@ -178,12 +178,13 @@ function showPatchForm(){
             +"   <h1 class='mt-5'>Zmodyfikuj rezerwacje</h1>"
             +"   <form>"
             +"   <div class='form-group'>"
-            +"     <input type='text' class='form-control' id='reservation_id' placeholder='Identyfikator rezerwacji' required>"
+            +"     <input type='number' class='form-control' id='reservation_id' placeholder='Identyfikator rezerwacji' required>"
+            +"     <input type='number' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
             +"     <input type='text' class='form-control' id='date_from' placeholder='Od YYYY-MM-DD' required'>"
             +"      <input type='text' class='form-control' id='date_to' placeholder='Do YYYY-MM-DD' required>"
             +"     </div>"
-            +"   </form>"
             +"   <button type='button' class='btn btn-primary' onclick={patchReservation()};>Zmodyfikuj rezerwacje</button>"
+            +"   </form>"
             +" </div>"
             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
             +"</div>";
@@ -242,15 +243,16 @@ function addReservation() {
 }
 
 function patchReservation() {
-    var url = "http://localhost:5000/reservation";
     var isAdmin = sessionStorage.getItem("isAdmin");
     var reservation_id = document.getElementById("reservation_id").value;
+    var car_id = document.getElementById("car_id").value;
     var date_from = document.getElementById("date_from").value;
     var date_to = document.getElementById("date_to").value;
+    var url = "http://localhost:5000/reservation/" + reservation_id;
 
 
     var params = new FormData();
-    params.append('reservation_id', reservation_id);
+    params.append('car_id', car_id);
     params.append('date_from', date_from);
     params.append('date_to', date_to);
 
