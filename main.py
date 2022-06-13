@@ -167,7 +167,7 @@ class Car(Resource):
         else:
             abort(403, message='You need admin privilages...')
         
-        return '', 204
+        return '', 200
 
 class CarAll(Resource):
 
@@ -320,7 +320,7 @@ class Register(Resource):
             db.session.add(user)
             db.session.commit()
 
-        return user, 201
+        return user, 200
 
 
 

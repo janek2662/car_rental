@@ -33,7 +33,7 @@ class FlaskTest(unittest2.TestCase):
 
         response = requests.post(FlaskTest.API_URL_LOGIN, {"login": login, "password": password})
         statuscode = response.status_code
-        self.assertEqual(statuscode, 409)
+        self.assertEqual(statuscode, 404)
     
     def test_register_fail(self):
         response = requests.post(FlaskTest.API_URL_REGISTER, {"login": "admin", "password": "admin"})
