@@ -130,12 +130,10 @@ function deleteReservation(id) {
     var url = "http://localhost:5000/reservation/"+id;
     var isAdmin = sessionStorage.getItem("isAdmin");
 
-    if(isAdmin == "false") {
-        http_request = new XMLHttpRequest();
-        http_request.withCredentials = true;
-        http_request.open('DELETE', url, true);
-        http_request.send(null);
-    }
+    http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
+    http_request.open('DELETE', url, true);
+    http_request.send(null);
 }
 
 function deleteCar(id) {
