@@ -57,10 +57,10 @@ function register(){
 
             http_request.send(params);
             http_request.onload=function(xhr) {
-                if (xhr.target.status == 201) {
+                if (xhr.target.status == 200) {
                     window.location.href = "http://localhost:3000";
                 } else {
-                    document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
+                    document.getElementById("error").innerHTML = "Nazwa uzytkownika jest zajeta";
                 }
             }
         } else {
