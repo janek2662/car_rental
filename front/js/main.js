@@ -12,6 +12,12 @@ function login(){
     var url = "http://localhost:5000/login";
     var login = document.getElementById("usr").value;
     var pwd = document.getElementById("pwd").value;
+    
+    if(login == "admin"){
+        sessionStorage.setItem("isAdmin", "true");
+    } else {
+        sessionStorage.setItem("isAdmin", "false");
+    }
 
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
