@@ -254,9 +254,9 @@ function patchReservation() {
 
 
     var params = new FormData();
-    params.append('car_id_patch', car_id_patch);
-    params.append('date_from_patch', date_from_patch);
-    params.append('date_to_patch', date_to_patch);
+    params.append('car_id', car_id_patch);
+    params.append('date_from', date_from_patch);
+    params.append('date_to', date_to_patch);
 
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
