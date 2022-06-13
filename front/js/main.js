@@ -127,7 +127,7 @@ function deleteReservation(id) {
 }
 
 function deleteCar() {
-    var url = "http://localhost:5000/car/"+document.getElementById("car_id").value;
+    var url = "http://localhost:5000/car/"+ document.getElementById("car_id").value;
     var isAdmin = sessionStorage.getItem("isAdmin");
 
     if(isAdmin == "true") {
@@ -148,10 +148,10 @@ function showAddReservationForm(){
             +"   <div class='form-group'>"
             +"     <input type='text' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
             +"     <input type='text' class='form-control' id='date_from' placeholder='Od YYYY-MM-DD' required'>"
-            +"      <input type='text' class='form-control' id='date_to' placeholder='Do YYYY-MM-DD' required>"
-            +"     </div>"
-            +"   </form>"
+            +"     <input type='text' class='form-control' id='date_to' placeholder='Do YYYY-MM-DD' required>"
+            +"   </div>"
             +"   <button type='button' class='btn btn-primary' onclick={addReservation()};>Dodaj rezerwacje</button>"
+            +"   </form>"
             +" </div>"
             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
             +"</div>";
@@ -195,8 +195,8 @@ function showAddCarForm(){
             +"      <input type='number' class='form-control' id='version' placeholder='Wersja auta' required>"
             +"      <input type='number' class='form-control' id='year' placeholder='Rok produkcji' required>"
             +"     </div>"
-            +"   </form>"
             +"   <button type='button' class='btn btn-primary' onclick={addCar()};>Dodaj samochod</button>"
+            +"   </form>"
             +" </div>"
             +" <p class='text-danger' style='margin-left: 45%; margin-top: 10%' id='meassage'></p>"
             +"</div>";
@@ -213,7 +213,7 @@ function showDeleteCarForm(){
             +"   <h1 class='mt-5'>Usun samochod</h1>"
             +"   <form>"
             +"   <div class='form-group'>"
-            +"     <input type='number' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
+            +"     <input type='text' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
             +"     </div>"
             +"   </form>"
             +"   <button type='button' class='btn btn-primary' onclick={deleteCar()};>Usun samochod</button>"
@@ -230,8 +230,7 @@ function addReservation() {
     var isAdmin = sessionStorage.getItem("isAdmin");
     var car_id = document.getElementById("car_id").value;
     var date_from = document.getElementById("date_from").value;
-    var date_to = document.getElementById("date_to").value;
-
+    var date_to = document.getElementById("date_to").value;    
 
     var params = new FormData();
     params.append('car_id', car_id);
@@ -243,10 +242,10 @@ function addReservation() {
     http_request.withCredentials = true;
     if(isAdmin == "false") {
         // var jsonString = JSON.stringify(dataToSend);
-        http_request.open('POST', url);
-        // http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http_request.open('POST', url, true);
+
         http_request.send(params);
-        // http_request.send(jsonString);
+
         document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
     }
 }
