@@ -12,13 +12,6 @@ function login(){
     var url = "http://localhost:5000/login";
     var login = document.getElementById("usr").value;
     var pwd = document.getElementById("pwd").value;
-    // var base64 = btoa(login+":"+pwd)
-
-// function login(){
-//     var url = "http://localhost:5000/login";
-//     var login = document.getElementById("usr").value;
-//     var pwd = document.getElementById("pwd").value;
-//     var base64 = btoa(login+":"+pwd)
 
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
@@ -33,15 +26,7 @@ function login(){
 
     http_request.onload = function(xhr) {
         if (xhr.target.status == 200) {
-            // console.log(http_request.getResponseHeader("Set-Cookie"));
-            // document.cookie = http_request.getResponseHeader("Set-Cookie");
-            
-            // if(login == "admin") {
-            //     sessionStorage.setItem("is_admin", "true");
-            // }
-            // sessionStorage.setItem("is_logged", "true");
-            // sessionStorage.setItem("pass", base64);
-            // window.location.href = "http://localhost:3000/dashboard.html";
+            window.location.href = "http://localhost:3000/dashboard.html";
         } else {
             document.getElementById("error").innerHTML = "Niepoprawna nazwa użytkownika lub hasło";
         }
@@ -96,6 +81,7 @@ function showCars() {
     var isAdmin = sessionStorage.getItem("is_admin");
     
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     http_request.open('GET', url, true);
     http_request.onload = function(xhr) {
         var data = JSON.parse(xhr.target.response);
@@ -117,6 +103,7 @@ function showReservations() {
     
     http_request = new XMLHttpRequest();
     http_request.open('GET', url, true);
+    http_request.withCredentials = true;
     http_request.onload = function(xhr) {
         var data = JSON.parse(xhr.target.response);
         document.getElementById("reservations").innerHTML =
@@ -210,6 +197,7 @@ function deleteReservation(id) {
     var userLogged = sessionStorage.getItem("isLogged");
 
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     http_request.open('DELETE', url, true);
     // http_request.setRequestHeader("Authorization", "Basic "+ base64);
     http_request.send(null);
@@ -221,6 +209,7 @@ function deleteCar() {
     var userLogged = sessionStorage.getItem("isLogged");
 
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     http_request.open('DELETE', url, true);
     // http_request.setRequestHeader("Authorization", "Basic "+ base64);
     http_request.send(null);
@@ -327,6 +316,7 @@ function addReservation() {
     }
 
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     if(isAdmin == "true") {
         var jsonString = JSON.stringify(dataToSend);
         http_request.open('POST', url);
@@ -351,6 +341,7 @@ function patchReservation() {
     }
 
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     if(isAdmin == "true") {
         var jsonString = JSON.stringify(dataToSend);
         http_request.open('PATCH', url);
@@ -377,6 +368,7 @@ function addCar() {
 
     var url = "http://localhost:5000/car/" + document.getElementById("car_id").value;
     http_request = new XMLHttpRequest();
+    http_request.withCredentials = true;
     if(isAdmin == "true") {
         var jsonString = JSON.stringify(dataToSend);
         http_request.open('PUT', url);
