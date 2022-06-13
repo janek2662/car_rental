@@ -180,9 +180,9 @@ function showPatchForm(){
             +"   <form>"
             +"   <div class='form-group'>"
             +"     <input type='number' class='form-control' id='reservation_id' placeholder='Identyfikator rezerwacji' required>"
-            +"     <input type='number' class='form-control' id='car_id' placeholder='Identyfikator samochodu' required>"
-            +"     <input type='text' class='form-control' id='date_from' placeholder='Od YYYY-MM-DD' required'>"
-            +"      <input type='text' class='form-control' id='date_to' placeholder='Do YYYY-MM-DD' required>"
+            +"     <input type='number' class='form-control' id='car_id_patch' placeholder='Identyfikator samochodu' required>"
+            +"     <input type='text' class='form-control' id='date_from_patch' placeholder='Od YYYY-MM-DD' required'>"
+            +"      <input type='text' class='form-control' id='date_to_patch' placeholder='Do YYYY-MM-DD' required>"
             +"     </div>"
             +"   <button type='button' class='btn btn-primary' onclick={patchReservation()};>Zmodyfikuj rezerwacje</button>"
             +"   </form>"
@@ -247,24 +247,21 @@ function addReservation() {
 function patchReservation() {
     var isAdmin = sessionStorage.getItem("isAdmin");
     var reservation_id = document.getElementById("reservation_id").value;
-    var car_id = document.getElementById("car_id").value;
-    var date_from = document.getElementById("date_from").value;
-    var date_to = document.getElementById("date_to").value;
+    var car_id_patch = document.getElementById("car_id_patch").value;
+    var date_from_patch = document.getElementById("date_from_patch").value;
+    var date_to_patch = document.getElementById("date_to_patch").value;
     var url = "http://localhost:5000/reservation/" + reservation_id;
 
 
     var params = new FormData();
-    params.append('car_id', car_id);
-    params.append('date_from', date_from);
-    params.append('date_to', date_to);
+    params.append('car_id_patch', car_id_patch);
+    params.append('date_from_patch', date_from_patch);
+    params.append('date_to_patch', date_to_patch);
 
     http_request = new XMLHttpRequest();
     http_request.withCredentials = true;
     if(isAdmin == "false") {
-        // var jsonString = JSON.stringify(dataToSend);
         http_request.open('PATCH', url);
-        // http_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        // http_request.setRequestHeader("Authorization", "Basic "+ base64);
         http_request.send(params);
         document.getElementById("meassage").innerHTML = "Rezerwacja dodana";
     }
